@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Maximize2, Minus, Moon, Plus, ShieldCheck, SlidersHorizontal, Sun, Type } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Maximize2, Minus, Moon, Plus, ShieldCheck, SlidersHorizontal, Sun, Type, RemoveFormatting } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
+import { RichReader, type RichReaderHandle } from "@/components/rich-reader";
 
 const MIN_FONT = 12;
 const MAX_FONT = 36;
 
 export default function Home() {
+  const readerRef = useRef<RichReaderHandle>(null);
   const [text, setText] = useState("");
   const [fontSize, setFontSize] = useState(17);
   const [width, setWidth] = useState(100);
@@ -41,17 +42,7 @@ export default function Home() {
     <div className="app-shell">
       <main className="canvas-container" aria-label="Reading workspace">
         <div className="reading-canvas" style={{ width: `${width}%` }}>
-          <Textarea
-            id="reader"
-            aria-label="Your reading text"
-            value={text}
-            onChange={event => setText(event.target.value)}
-            placeholder="Paste your text here…"
-            style={{ fontSize: `${fontSize}px` }}
-            spellCheck={false}
-            autoCapitalize="off"
-            autoCorrect="off"
-          />
+          <RichReader ref={readerRef} fontSize={fontSize} onChange={setText} />
         </div>
       </main>
 
@@ -78,6 +69,12 @@ export default function Home() {
             <Button variant="ghost" size="sm" aria-label="Light" aria-pressed={theme === "light"} onClick={() => setTheme("light")}><Sun /><span>Light</span></Button>
             <Button variant="ghost" size="sm" aria-label="Dark" aria-pressed={theme === "dark"} onClick={() => setTheme("dark")}><Moon /><span>Dark</span></Button>
           </div>
+        </div>
+
+        <div className="control-section formatting-control">
+          <Button variant="outline" className="clear-formatting" aria-label="Clear formatting" title="Convert all content to plain text" disabled={!text} onClick={() => readerRef.current?.clearFormatting()}>
+            <RemoveFormatting /><span>Clear formatting</span>
+          </Button>
         </div>
 
         <div className="sidebar-details">
