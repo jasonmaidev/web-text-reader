@@ -7,6 +7,7 @@ import { TableKit } from "@tiptap/extension-table";
 import { DOMParser as EditorDOMParser } from "@tiptap/pm/model";
 import { closeHistory } from "@tiptap/pm/history";
 import DOMPurify from "dompurify";
+import { ReadingAccents } from "@/lib/reading-accents";
 
 const Indentation = Extension.create({
   name: "indentation",
@@ -60,6 +61,7 @@ export function RichReader({ ref, fontSize, fontFamily, textOpacity, onChange }:
       StarterKit.configure({ link: { openOnClick: false, autolink: false }, trailingNode: false }),
       TableKit,
       Indentation,
+      ReadingAccents,
     ],
     editorProps: {
       attributes: {
@@ -80,11 +82,15 @@ export function RichReader({ ref, fontSize, fontFamily, textOpacity, onChange }:
         const html = clipboard.getData("text/html");
         if (html) {
           const clean = DOMPurify.sanitize(html, {
-            ALLOWED_TAGS: ["p", "div", "span", "br", "strong", "b", "em", "i", "u", "s", "strike", "del", "code", "pre", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "blockquote", "a", "table", "thead", "tbody", "tfoot", "tr", "td", "th", "hr"],
+            ALLOWED_TAGS: ["p", "div", "span", "br", "strong", "b", "em", "i", "u", "s", "strike", "del", "code", "pre", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "blockquote", "q", "a", "table", "thead", "tbody", "tfoot", "tr", "td", "th", "hr"],
             ALLOWED_ATTR: ["href", "start", "colspan", "rowspan", "style"],
           });
           const container = document.createElement("div");
           container.innerHTML = clean;
+          // Make semantic HTML quotations explicit, including after clear-formatting.
+          for (const quote of [...container.querySelectorAll("q")].reverse()) {
+            quote.replaceWith(document.createTextNode("“"), ...quote.childNodes, document.createTextNode("”"));
+          }
           const slice = EditorDOMParser.fromSchema(view.state.schema).parseSlice(container, { preserveWhitespace: true });
           if (slice.content.size) {
             view.dispatch(view.state.tr.replaceSelection(slice).scrollIntoView());

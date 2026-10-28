@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type Locator } from "@playwright/test";
 
 test("preserves pasted prose, JavaScript, Python, and literal HTML", async ({ page }) => {
   await page.goto("/");
@@ -197,4 +197,60 @@ test("opacity changes only text, preserves formatting, and persists across theme
   await expect(slider).toHaveAttribute("aria-valuenow", "31");
   await expect(reader).toHaveCSS("color", /\/ 0\.31\)/);
   await expect(reader).toHaveText("");
+});
+
+
+async function textColor(locator: Locator) {
+  return locator.evaluate(element => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    const context = canvas.getContext("2d")!;
+    context.fillStyle = getComputedStyle(element).color;
+    context.fillRect(0, 0, 1, 1);
+    return Array.from(context.getImageData(0, 0, 1, 1).data);
+  });
+}
+
+const accentContent = `<p>She said "Read slowly", then “take your time” and 'stay curious'. Don't color contractions or readers’ apostrophes.</p><p><em>Italic thought</em></p><blockquote><p>A block quotation</p></blockquote><p><strong>Summary::</strong> The key details.</p><p><strong>Next steps</strong>:: Keep reading.</p><p><strong>Important:</strong> One more thought.</p><p><strong>Ordinary bold</strong> stays neutral.</p><p><q>A semantic quotation</q></p><pre><code>const text = "code quote";</code></pre><p><code>"inline quote"</code></p>`;
+
+test("theme accents and prose highlighting distinguish quotes, italics, labels, and code", async ({ page }) => {
+  await page.goto("/");
+  await paste(page, accentContent, "Reading notes");
+  const reader = page.getByRole("textbox");
+  const originalText = await reader.textContent();
+  await expect(reader.locator(".reader-quotation")).toHaveCount(4);
+  await expect(reader.locator(".reader-label")).toHaveCount(3);
+  await expect(reader.locator("code .reader-quotation, pre .reader-quotation, code .reader-label")).toHaveCount(0);
+  for (const theme of ["Light", "Dark"]) {
+    await page.getByRole("button", { name: theme, exact: true }).click();
+    const accent = theme === "Light" ? [255, 74, 140, 255] : [74, 255, 180, 255];
+    const label = theme === "Light" ? [81, 70, 168, 255] : [255, 212, 138, 255];
+    await expect(page.locator(".brand-icon")).toHaveCSS("background-color", `rgb(${accent.slice(0, 3).join(", ")})`);
+    expect(await textColor(reader.locator("em"))).toEqual(accent);
+    expect(await textColor(reader.locator(".reader-quotation").first())).toEqual(accent);
+    expect(await textColor(reader.locator("blockquote p"))).toEqual(accent);
+    for (const highlighted of await reader.locator(".reader-label").all()) expect(await textColor(highlighted)).toEqual(label);
+    expect(await textColor(reader.locator("strong").filter({ hasText: "Ordinary bold" }))).toEqual(await textColor(reader));
+    for (const code of await reader.locator("code").all()) expect(await textColor(code)).toEqual(await textColor(reader));
+    expect(await reader.textContent()).toBe(originalText);
+  }
+  const opacity = page.getByRole("slider", { name: "Text opacity" });
+  await opacity.focus();
+  await page.keyboard.press("Home");
+  await expect(reader.locator("em")).toHaveCSS("color", /\/ 0\.3\)/);
+  await expect(reader.locator(".reader-quotation").first()).toHaveCSS("color", /\/ 0\.3\)/);
+  await expect(reader.locator(".reader-label").first()).toHaveCSS("color", /\/ 0\.3\)/);
+});
+
+test("quotation highlighting updates while typing without changing the words", async ({ page }) => {
+  await page.goto("/");
+  const reader = page.getByRole("textbox");
+  await reader.fill('A "live quote"');
+  await expect(reader.locator(".reader-quotation")).toHaveText('"live quote"');
+  await reader.press("End");
+  await reader.press("Backspace");
+  await expect(reader.locator(".reader-quotation")).toHaveCount(0);
+  await expect(reader).toHaveText('A "live quote');
+  await reader.press('"');
+  await expect(reader.locator(".reader-quotation")).toHaveText('"live quote"');
 });
