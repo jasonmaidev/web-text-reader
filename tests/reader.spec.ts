@@ -44,7 +44,7 @@ test("mobile controls and long unbroken code stay within the viewport", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await page.getByRole("textbox").fill("const longCode = '" + "x".repeat(500) + "';");
-  const slider = page.getByRole("slider");
+  const slider = page.getByRole("slider", { name: "Reading width" });
   await slider.focus();
   await page.keyboard.press("End");
   await page.getByRole("button", { name: "Increase text size" }).click();
@@ -129,6 +129,7 @@ test("clear formatting keeps content, list markers and code spacing, and support
   expect(text).toContain("    Indented paragraph");
   expect(text).toContain("def greet(name):\n    print(name)\n\treturn name");
   expect(text).toContain("Language\tUse\nPython\tScripts");
+  await expect(reader).toBeFocused();
   await page.keyboard.press("ControlOrMeta+z");
   await expect(reader.locator("ul ul li")).toHaveText("Nested bullet");
 });
@@ -153,7 +154,7 @@ test("font selection loads each font, preserves rich text and code, and survives
   await paste(page, formattedContent, "AI response");
   const reader = page.getByRole("textbox");
   const html = await reader.innerHTML();
-  for (const [value, family] of [["manrope", "Manrope Variable"], ["open-sans", "Open Sans Variable"], ["inter", "Inter Variable"]]) {
+  for (const [value, family] of [["manrope", "Manrope Variable"], ["open-sans", "Open Sans Variable"], ["source-sans-3", "Source Sans 3 Variable"], ["nunito-sans", "Nunito Sans Variable"], ["dm-sans", "DM Sans Variable"], ["roboto", "Roboto Variable"], ["inter", "Inter Variable"]]) {
     await page.getByRole("combobox", { name: "Font", exact: true }).selectOption(value);
     await expect(reader).toHaveCSS("font-family", `"${family}", sans-serif`);
     expect(await page.evaluate(async name => (await document.fonts.load(`17px "${name}"`)).length, family)).toBeGreaterThan(0);
@@ -162,5 +163,38 @@ test("font selection loads each font, preserves rich text and code, and survives
   }
   await page.reload();
   await expect(page.getByRole("combobox", { name: "Font", exact: true })).toHaveValue("inter");
+  await expect(reader).toHaveText("");
+});
+
+
+test("opacity changes only text, preserves formatting, and persists across themes and reload", async ({ page }) => {
+  await page.goto("/");
+  await paste(page, formattedContent + '<p><a href="https://example.com">A link</a></p>', "AI response");
+  const reader = page.getByRole("textbox");
+  const html = await reader.innerHTML();
+  const canvas = page.locator(".reading-canvas");
+  await expect(canvas).toHaveCSS("backdrop-filter", "blur(24px) saturate(1.35)");
+  const slider = page.getByRole("slider", { name: "Text opacity" });
+  for (const theme of ["Light", "Dark"]) {
+    await page.getByRole("button", { name: theme, exact: true }).click();
+    const background = await canvas.evaluate(element => getComputedStyle(element).backgroundColor);
+    await slider.focus();
+    await page.keyboard.press("Home");
+    await expect(slider).toHaveAttribute("aria-valuenow", "30");
+    await expect(reader).toHaveCSS("color", /\/ 0\.3\)/);
+    await expect(reader.locator("a")).toHaveCSS("color", /\/ 0\.3\)/);
+    await expect(reader).toHaveCSS("opacity", "1");
+    await expect(canvas).toHaveCSS("background-color", background);
+    expect(await reader.innerHTML()).toBe(html);
+    await page.keyboard.press("End");
+    await expect(slider).toHaveAttribute("aria-valuenow", "100");
+  }
+  await slider.focus();
+  await page.keyboard.press("Home");
+  await page.keyboard.press("ArrowRight");
+  await expect(slider).toHaveAttribute("aria-valuenow", "31");
+  await page.reload();
+  await expect(slider).toHaveAttribute("aria-valuenow", "31");
+  await expect(reader).toHaveCSS("color", /\/ 0\.31\)/);
   await expect(reader).toHaveText("");
 });

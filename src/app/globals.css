@@ -5,32 +5,37 @@
   --background: #f7f6f2;
   --foreground: #35382f;
   --card: #fffefa;
-  --primary: #b8583c;
+  --primary: #ff4a8c;
   --primary-foreground: #ffffff;
   --secondary: #e7e5dd;
   --muted-foreground: #8b8c80;
   --accent: #eeede7;
   --accent-foreground: #35382f;
   --input: #e4e3da;
-  --ring: #b8583c;
+  --ring: #ff4a8c;
   --subtle: #a1a293;
   --line: #e4e4da;
-  --dot: #dedfd4;
+  --glass-background: #fffefab3;
+  --glass-edge: #ffffffcc;
+  --glass-highlight: #ffffffa3;
 }
 .dark {
   --background: #10151f;
   --foreground: #e3e8f1;
   --card: #1a2130;
-  --primary: #e19573;
+  --primary: #ff4a8c;
   --primary-foreground: #111722;
   --secondary: #354258;
   --muted-foreground: #a1aec3;
   --accent: #263246;
   --accent-foreground: #edf2fa;
   --input: #3b485f;
-  --ring: #e19573;
+  --ring: #ff4a8c;
   --subtle: #8798af;
   --line: #354158;
+  --glass-background: #1a213066;
+  --glass-edge: #ffffff24;
+  --glass-highlight: #ffffff12;
   color-scheme: dark;
 }
 @theme inline {
@@ -53,18 +58,19 @@ body { margin: 0; background: var(--background); color: var(--foreground); font-
 button, a, input, textarea, [contenteditable] { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
 button:disabled { cursor: default; }
-::selection { background: #b8583c35; }
+::selection { background: #ff4a8c35; }
 .app-shell { --tools-width: 208px; height: 100dvh; position: relative; padding: 8px; isolation: isolate; overflow: hidden; }
+.app-shell { background: radial-gradient(ellipse at 15% 30%, #d6efef 0%, transparent 52%), radial-gradient(ellipse at 88% 20%, #eadff52e 0%, transparent 50%), var(--background); }
 .dark .app-shell { background: radial-gradient(ellipse at 2% 18%, #2dd4bf29 0%, transparent 42%), radial-gradient(ellipse at 95% 15%, #818cf838 0%, transparent 42%), radial-gradient(ellipse at 48% 110%, #38bdf82e 0%, transparent 55%), var(--background); }
 .brand { position: absolute; top: 24px; left: 24px; z-index: 1; display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 600; letter-spacing: -1.2px; }
-.brand-icon { background: #bc5433; color: #fffaf5; width: 35px; height: 35px; display: grid; place-items: center; border-radius: 10px; transform: rotate(-5deg); }
+.brand-icon { background: #ff4a8c; color: #fffaf5; width: 35px; height: 35px; display: grid; place-items: center; border-radius: 10px; transform: rotate(-5deg); }
 .brand-period { color: var(--primary); }
 .canvas-container { height: 100%; display: flex; justify-content: center; padding-inline: calc(var(--tools-width) + 8px); }
-.reading-canvas { height: 100%; min-width: 0; flex-shrink: 0; background: var(--card); border-radius: 24px; overflow: hidden; box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 65%, transparent), 0 10px 35px #1015210a; }
-.reader-editor { display: block; width: 100%; height: 100%; min-height: 0; padding: 28px 32px; border: 0; border-radius: 0; box-shadow: none; overflow-y: auto; outline: none; white-space: pre-wrap; line-height: 1.85; font-family: inherit; letter-spacing: normal; tab-size: 4; overflow-wrap: anywhere; color: var(--foreground); overscroll-behavior: contain; }
+.reading-canvas { height: 100%; min-width: 0; flex-shrink: 0; background: var(--glass-background); backdrop-filter: blur(24px) saturate(135%); border-radius: 24px; overflow: hidden; box-shadow: inset 0 1px 0 var(--glass-highlight), 0 0 0 1px var(--glass-edge), 0 12px 40px #10152112; }
+.reader-editor { display: block; width: 100%; height: 100%; min-height: 0; padding: 28px 32px; border: 0; border-radius: 0; box-shadow: none; overflow-y: auto; outline: none; white-space: pre-wrap; line-height: 1.85; font-family: inherit; letter-spacing: normal; tab-size: 4; overflow-wrap: anywhere; color: color-mix(in srgb, var(--foreground) var(--reader-opacity, 100%), transparent); overscroll-behavior: contain; }
 .reader-editor:focus-visible { border-radius: 24px; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary) 35%, transparent); }
 .rich-reader { height: 100%; }
-.reader-editor:has(> p:only-child > br.ProseMirror-trailingBreak:only-child)::before { content: attr(data-placeholder); color: var(--muted-foreground); position: absolute; pointer-events: none; }
+.reader-editor:has(> p:only-child > br.ProseMirror-trailingBreak:only-child)::before { content: attr(data-placeholder); color: color-mix(in srgb, var(--muted-foreground) var(--reader-opacity, 100%), transparent); position: absolute; pointer-events: none; }
 .reader-editor p { margin: 0 0 0.65em; }
 .reader-editor > :last-child { margin-bottom: 0; }
 .reader-editor ul, .reader-editor ol { padding-left: 1.75em; margin: 0.65em 0; }
@@ -80,7 +86,7 @@ button:disabled { cursor: default; }
 .reader-editor > :first-child { margin-top: 0; }
 .reader-editor strong { font-weight: 700; }
 .reader-editor em { font-style: italic; }
-.reader-editor a { color: var(--primary); text-decoration: underline; }
+.reader-editor a { color: color-mix(in srgb, var(--primary) var(--reader-opacity, 100%), transparent); text-decoration: underline; }
 .reader-editor blockquote { border-left: 3px solid var(--primary); padding-left: 1em; margin: 0.75em 0; }
 .reader-editor pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 1em; margin: 0.75em 0; background: var(--accent); border-radius: 6px; font: inherit; font-family: var(--font-mono); }
 .reader-editor code { font-family: var(--font-mono); background: var(--accent); border-radius: 3px; }
@@ -105,6 +111,7 @@ button:disabled { cursor: default; }
 .font-actions output span { font-size: 10px; color: var(--muted-foreground); margin-left: 4px; }
 .width-control [data-slot="slider"] { margin: 3px 0; }
 .width-label { display: flex; justify-content: space-between; gap: 5px; font-size: 10px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.opacity-label { font-size: 10px; color: var(--muted-foreground); text-align: right; font-variant-numeric: tabular-nums; }
 .theme-switch { display: flex; padding: 3px; border-radius: 7px; background: var(--background); border: 1px solid var(--line); }
 .theme-switch button { flex: 1; height: 30px; font-size: 11px; gap: 7px; padding: 0 9px; color: var(--muted-foreground); }
 .theme-switch button svg { width: 13px; height: 13px; }
@@ -131,6 +138,7 @@ button:disabled { cursor: default; }
   .font-actions output span { font-size: 9px; margin-left: 2px; }
   .width-label { justify-content: center; font-size: 9px; }
   .width-label > span { display: none; }
+  .opacity-label { text-align: center; font-size: 9px; }
   .theme-switch { flex-direction: column; gap: 4px; }
   .theme-switch button { flex: none; height: 36px; }
   .theme-switch button span { display: none; }

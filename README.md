@@ -5,8 +5,9 @@ A focused text reader built with Next.js App Router, TypeScript, Tailwind CSS, a
 - Paste or type AI responses, prose, JavaScript, Python, or other text.
 - A rounded text area uses the viewport height with an 8px outer inset and stays centered on the full screen, balancing the right sidebar with matching left space. The original logo sits in the upper left. The sidebar becomes a compact rail on mobile.
 - Adjust font size from 12–36 px and reading width from 50–100%.
-- Choose bundled Manrope, Open Sans, or Inter fonts; code blocks stay monospaced. Font preferences persist in the browser.
-- Switch between light and cool gray dark appearances, with a soft aurora background in dark mode.
+- Choose bundled Google Fonts: Manrope, Open Sans, Inter, Source Sans 3, Nunito Sans, DM Sans, or Roboto; code blocks stay monospaced. Font preferences persist in the browser.
+- Switch between light and cool gray dark appearances, with a soft aurora background in dark mode and a frosted glass editor. Logo and component accents use `#ff4a8c`.
+- Adjust text opacity from 30–100% without fading the glass surface or controls; the setting persists in the browser.
 - Pasting rich text retains headings, emphasis, nested bullet/numbered lists, paragraph indentation, links, code blocks, and tables. Plain-text pastes preserve spaces, tabs, and line breaks. Long lines wrap.
 - Clear formatting converts the entire document to plain text, keeping list markers, nesting, code spacing, and line breaks. Undo restores the previous formatting.
 - Rich clipboard HTML is sanitized and imported into a restricted editor schema. Scripts, images, frames, and event handlers are discarded; code never executes. Markdown pasted as plain text stays literal.

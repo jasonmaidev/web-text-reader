@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, Maximize2, Minus, Moon, Plus, ShieldCheck, SlidersHorizontal, Sun, Type, RemoveFormatting } from "lucide-react";
+import { Blend, BookOpen, Maximize2, Minus, Moon, Plus, ShieldCheck, SlidersHorizontal, Sun, Type, RemoveFormatting } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { RichReader, type RichReaderHandle } from "@/components/rich-reader";
@@ -15,6 +15,7 @@ export default function Home() {
   const [text, setText] = useState("");
   const [fontSize, setFontSize] = useState(17);
   const [font, setFont] = useState<ReaderFont>("manrope");
+  const [textOpacity, setTextOpacity] = useState(100);
   const [width, setWidth] = useState(100);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [loaded, setLoaded] = useState(false);
@@ -23,6 +24,7 @@ export default function Home() {
     try {
       const saved = JSON.parse(localStorage.getItem("readspace-preferences") || "null");
       if (saved) {
+        if (Number.isFinite(saved.textOpacity)) setTextOpacity(Math.min(100, Math.max(30, saved.textOpacity)));
         if (isReaderFont(saved.font)) setFont(saved.font);
         if (Number.isFinite(saved.fontSize)) setFontSize(Math.min(MAX_FONT, Math.max(MIN_FONT, saved.fontSize)));
         if (Number.isFinite(saved.width)) setWidth(Math.min(100, Math.max(50, saved.width)));
@@ -35,8 +37,8 @@ export default function Home() {
   useEffect(() => {
     if (!loaded) return;
     document.documentElement.classList.toggle("dark", theme === "dark");
-    try { localStorage.setItem("readspace-preferences", JSON.stringify({ fontSize, font, width, theme })); } catch { /* Preferences are optional. */ }
-  }, [fontSize, font, width, theme, loaded]);
+    try { localStorage.setItem("readspace-preferences", JSON.stringify({ fontSize, font, textOpacity, width, theme })); } catch { /* Preferences are optional. */ }
+  }, [fontSize, font, textOpacity, width, theme, loaded]);
 
   const wordCount = text.trim() ? text.trim().split(/\s+/u).length : 0;
   const widthLabel = width < 65 ? "Narrow" : width > 90 ? "Wide" : "Comfortable";
@@ -49,7 +51,7 @@ export default function Home() {
       </div>
       <main className="canvas-container" aria-label="Reading workspace">
         <div className="reading-canvas" style={{ width: `${width}%` }}>
-          <RichReader ref={readerRef} fontSize={fontSize} fontFamily={readerFonts[font].family} onChange={setText} />
+          <RichReader ref={readerRef} fontSize={fontSize} textOpacity={textOpacity} fontFamily={readerFonts[font].family} onChange={setText} />
         </div>
       </main>
 
@@ -74,6 +76,12 @@ export default function Home() {
           <div className="control-heading"><Maximize2 size={14} /><span>Reading width</span></div>
           <Slider aria-label="Reading width" min={50} max={100} step={1} value={[width]} onValueChange={value => setWidth(value[0])} />
           <output className="width-label">{widthLabel}<span>{width}%</span></output>
+        </div>
+
+        <div className="control-section opacity-control">
+          <div className="control-heading"><Blend size={15} /><span>Text opacity</span></div>
+          <Slider aria-label="Text opacity" min={30} max={100} step={1} value={[textOpacity]} onValueChange={value => setTextOpacity(value[0])} />
+          <output className="opacity-label" aria-label="Current text opacity">{textOpacity}%</output>
         </div>
 
         <div className="control-section theme-control">

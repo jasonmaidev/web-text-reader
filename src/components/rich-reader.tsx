@@ -1,6 +1,6 @@
 "use client";
 
-import { useImperativeHandle, type Ref } from "react";
+import { useImperativeHandle, type Ref, type CSSProperties } from "react";
 import { EditorContent, Extension, useEditor, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TableKit } from "@tiptap/extension-table";
@@ -53,7 +53,7 @@ function plainText(node: JSONContent, depth = 0): string {
 
 export type RichReaderHandle = { clearFormatting: () => void };
 
-export function RichReader({ ref, fontSize, fontFamily, onChange }: { ref: Ref<RichReaderHandle>; fontSize: number; fontFamily: string; onChange: (text: string) => void }) {
+export function RichReader({ ref, fontSize, fontFamily, textOpacity, onChange }: { ref: Ref<RichReaderHandle>; fontSize: number; fontFamily: string; textOpacity: number; onChange: (text: string) => void }) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -115,5 +115,5 @@ export function RichReader({ ref, fontSize, fontFamily, onChange }: { ref: Ref<R
     },
   }), [editor]);
 
-  return <EditorContent editor={editor} className="rich-reader" style={{ fontSize: `${fontSize}px`, fontFamily }} />;
+  return <EditorContent editor={editor} className="rich-reader" style={{ fontSize: `${fontSize}px`, fontFamily, "--reader-opacity": `${textOpacity}%` } as CSSProperties} />;
 }
