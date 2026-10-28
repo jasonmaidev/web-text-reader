@@ -32,8 +32,9 @@ function decorationsFor(doc: EditorNode) {
       if (boldStart === null) return;
       const label = text.slice(boldStart, boldEnd);
       const following = text.slice(boldEnd);
-      // Accept punctuation inside the bold text or directly after the bold run.
-      if (/:\s*$/.test(label) || /^\s*:/.test(following)) {
+      const startsParagraph = block.type.name === "paragraph" && text.slice(0, boldStart).trim() === "";
+      // Paragraph-leading bold acts as a title, with or without punctuation.
+      if (startsParagraph || /:\s*$/.test(label) || /^\s*:/.test(following)) {
         decorations.push(Decoration.inline(position + 1 + boldStart, position + 1 + boldEnd, { class: "reader-label" }));
       }
       boldStart = null;

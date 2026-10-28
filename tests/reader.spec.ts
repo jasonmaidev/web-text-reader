@@ -211,7 +211,7 @@ async function textColor(locator: Locator) {
   });
 }
 
-const accentContent = `<p>She said "Read slowly", then “take your time” and 'stay curious'. Don't color contractions or readers’ apostrophes.</p><p><em>Italic thought</em></p><blockquote><p>A block quotation</p></blockquote><p><strong>Summary::</strong> The key details.</p><p><strong>Next steps</strong>:: Keep reading.</p><p><strong>Important:</strong> One more thought.</p><p><strong>Ordinary bold</strong> stays neutral.</p><p><q>A semantic quotation</q></p><pre><code>const text = "code quote";</code></pre><p><code>"inline quote"</code></p>`;
+const accentContent = `<p>She said "Read slowly", then “take your time” and 'stay curious'. Don't color contractions or readers’ apostrophes.</p><p><em>Italic thought</em></p><blockquote><p>A block quotation</p></blockquote><p><strong>Summary::</strong> The key details.</p><p><strong>Next steps</strong>:: Keep reading.</p><p><strong>Important:</strong> One more thought.</p><p>Mid-paragraph <strong>Ordinary bold</strong> stays neutral.</p><p><strong>Paragraph title</strong> No punctuation needed.</p><p>  <strong>Indented title</strong> With leading whitespace.</p><p><strong>Standalone title</strong></p><p><q>A semantic quotation</q></p><pre><code>const text = "code quote";</code></pre><p><code>"inline quote"</code></p>`;
 
 test("theme accents and prose highlighting distinguish quotes, italics, labels, and code", async ({ page }) => {
   await page.goto("/");
@@ -219,7 +219,7 @@ test("theme accents and prose highlighting distinguish quotes, italics, labels, 
   const reader = page.getByRole("textbox");
   const originalText = await reader.textContent();
   await expect(reader.locator(".reader-quotation")).toHaveCount(4);
-  await expect(reader.locator(".reader-label")).toHaveCount(3);
+  await expect(reader.locator(".reader-label")).toHaveCount(6);
   await expect(reader.locator("code .reader-quotation, pre .reader-quotation, code .reader-label")).toHaveCount(0);
   for (const theme of ["Light", "Dark"]) {
     await page.getByRole("button", { name: theme, exact: true }).click();
@@ -230,6 +230,9 @@ test("theme accents and prose highlighting distinguish quotes, italics, labels, 
     expect(await textColor(reader.locator(".reader-quotation").first())).toEqual(accent);
     expect(await textColor(reader.locator("blockquote p"))).toEqual(accent);
     for (const highlighted of await reader.locator(".reader-label").all()) expect(await textColor(highlighted)).toEqual(label);
+    for (const title of ["Paragraph title", "Indented title", "Standalone title"]) {
+      await expect(reader.locator(".reader-label").filter({ hasText: title })).toHaveCount(1);
+    }
     expect(await textColor(reader.locator("strong").filter({ hasText: "Ordinary bold" }))).toEqual(await textColor(reader));
     for (const code of await reader.locator("code").all()) expect(await textColor(code)).toEqual(await textColor(reader));
     expect(await reader.textContent()).toBe(originalText);
