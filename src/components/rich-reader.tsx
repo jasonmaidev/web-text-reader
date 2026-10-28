@@ -53,7 +53,7 @@ function plainText(node: JSONContent, depth = 0): string {
 
 export type RichReaderHandle = { clearFormatting: () => void };
 
-export function RichReader({ ref, fontSize, onChange }: { ref: Ref<RichReaderHandle>; fontSize: number; onChange: (text: string) => void }) {
+export function RichReader({ ref, fontSize, fontFamily, onChange }: { ref: Ref<RichReaderHandle>; fontSize: number; fontFamily: string; onChange: (text: string) => void }) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -115,5 +115,5 @@ export function RichReader({ ref, fontSize, onChange }: { ref: Ref<RichReaderHan
     },
   }), [editor]);
 
-  return <EditorContent editor={editor} className="rich-reader" style={{ fontSize: `${fontSize}px` }} />;
+  return <EditorContent editor={editor} className="rich-reader" style={{ fontSize: `${fontSize}px`, fontFamily }} />;
 }

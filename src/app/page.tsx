@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Maximize2, Minus, Moon, Plus, ShieldCheck, SlidersHorizontal, Sun, Type, RemoveFormatting } from "lucide-react";
+import { BookOpen, Maximize2, Minus, Moon, Plus, ShieldCheck, SlidersHorizontal, Sun, Type, RemoveFormatting } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { RichReader, type RichReaderHandle } from "@/components/rich-reader";
+import { isReaderFont, readerFonts, type ReaderFont } from "@/lib/reader-fonts";
 
 const MIN_FONT = 12;
 const MAX_FONT = 36;
@@ -13,6 +14,7 @@ export default function Home() {
   const readerRef = useRef<RichReaderHandle>(null);
   const [text, setText] = useState("");
   const [fontSize, setFontSize] = useState(17);
+  const [font, setFont] = useState<ReaderFont>("manrope");
   const [width, setWidth] = useState(100);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [loaded, setLoaded] = useState(false);
@@ -21,6 +23,7 @@ export default function Home() {
     try {
       const saved = JSON.parse(localStorage.getItem("readspace-preferences") || "null");
       if (saved) {
+        if (isReaderFont(saved.font)) setFont(saved.font);
         if (Number.isFinite(saved.fontSize)) setFontSize(Math.min(MAX_FONT, Math.max(MIN_FONT, saved.fontSize)));
         if (Number.isFinite(saved.width)) setWidth(Math.min(100, Math.max(50, saved.width)));
         if (saved.theme === "dark" || saved.theme === "light") setTheme(saved.theme);
@@ -32,22 +35,32 @@ export default function Home() {
   useEffect(() => {
     if (!loaded) return;
     document.documentElement.classList.toggle("dark", theme === "dark");
-    try { localStorage.setItem("readspace-preferences", JSON.stringify({ fontSize, width, theme })); } catch { /* Preferences are optional. */ }
-  }, [fontSize, width, theme, loaded]);
+    try { localStorage.setItem("readspace-preferences", JSON.stringify({ fontSize, font, width, theme })); } catch { /* Preferences are optional. */ }
+  }, [fontSize, font, width, theme, loaded]);
 
   const wordCount = text.trim() ? text.trim().split(/\s+/u).length : 0;
   const widthLabel = width < 65 ? "Narrow" : width > 90 ? "Wide" : "Comfortable";
 
   return (
     <div className="app-shell">
+      <div className="brand" role="img" aria-label="Readspace">
+        <span className="brand-icon"><BookOpen size={21} strokeWidth={1.7} /></span>
+        <span className="brand-name">readspace<span className="brand-period">.</span></span>
+      </div>
       <main className="canvas-container" aria-label="Reading workspace">
         <div className="reading-canvas" style={{ width: `${width}%` }}>
-          <RichReader ref={readerRef} fontSize={fontSize} onChange={setText} />
+          <RichReader ref={readerRef} fontSize={fontSize} fontFamily={readerFonts[font].family} onChange={setText} />
         </div>
       </main>
 
       <aside className="controls" aria-label="Reading preferences">
         <div className="tools-heading"><SlidersHorizontal size={17} /><span>Reading tools</span></div>
+        <div className="control-section font-family-control">
+          <label className="control-heading" htmlFor="reader-font"><Type size={15} /><span>Font</span></label>
+          <select id="reader-font" value={font} onChange={event => { if (isReaderFont(event.target.value)) setFont(event.target.value); }}>
+            {Object.entries(readerFonts).map(([value, option]) => <option key={value} value={value}>{option.label}</option>)}
+          </select>
+        </div>
         <div className="control-section font-control">
           <div className="control-heading"><Type size={15} /><span>Text size</span></div>
           <div className="font-actions">

@@ -53,17 +53,25 @@ test("mobile controls and long unbroken code stay within the viewport", async ({
 });
 
 for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }, { width: 844, height: 390 }]) {
-  test(`reader fills viewport height with tools on the right at ${viewport.width}×${viewport.height}`, async ({ page }) => {
+  test(`reader stays screen-centered with 8px outer spacing and right-side tools at ${viewport.width}×${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.goto("/");
     const reader = page.getByRole("textbox");
     const tools = page.getByRole("complementary", { name: "Reading preferences" });
     const readerBox = (await reader.boundingBox())!;
     const toolsBox = (await tools.boundingBox())!;
-    expect(readerBox.y).toBe(0);
-    expect(readerBox.height).toBe(viewport.height);
+    expect(readerBox.y).toBe(8);
+    expect(readerBox.height).toBe(viewport.height - 16);
+    expect(readerBox.x + readerBox.width / 2).toBeCloseTo(viewport.width / 2, 0);
+    await expect(page.locator(".reading-canvas")).toHaveCSS("border-radius", "24px");
+    await expect(page.getByRole("img", { name: "Readspace" })).toBeVisible();
     expect(readerBox.x + readerBox.width).toBeLessThanOrEqual(toolsBox.x);
-    expect(toolsBox.x + toolsBox.width).toBe(viewport.width);
+    expect(toolsBox.x + toolsBox.width).toBe(viewport.width - 8);
+    const slider = page.getByRole("slider", { name: "Reading width" });
+    await slider.focus();
+    await page.keyboard.press("Home");
+    const narrowBox = (await reader.boundingBox())!;
+    expect(narrowBox.x + narrowBox.width / 2).toBeCloseTo(viewport.width / 2, 0);
     await reader.fill("A long AI response with code\n    print('hello')\n".repeat(300));
     expect(await reader.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(viewport.height);
@@ -137,4 +145,22 @@ test("paste preserves plain code spacing and strips executable or remote content
   await expect(reader).toContainText("Link text");
   await expect(reader.locator("script, img, iframe, [onclick], [onerror], [href^='javascript:']")).toHaveCount(0);
   expect(await page.evaluate(() => "unwanted" in window)).toBe(false);
+});
+
+
+test("font selection loads each font, preserves rich text and code, and survives reload", async ({ page }) => {
+  await page.goto("/");
+  await paste(page, formattedContent, "AI response");
+  const reader = page.getByRole("textbox");
+  const html = await reader.innerHTML();
+  for (const [value, family] of [["manrope", "Manrope Variable"], ["open-sans", "Open Sans Variable"], ["inter", "Inter Variable"]]) {
+    await page.getByRole("combobox", { name: "Font", exact: true }).selectOption(value);
+    await expect(reader).toHaveCSS("font-family", `"${family}", sans-serif`);
+    expect(await page.evaluate(async name => (await document.fonts.load(`17px "${name}"`)).length, family)).toBeGreaterThan(0);
+    expect(await reader.innerHTML()).toBe(html);
+    await expect(reader.locator("pre")).toHaveCSS("font-family", 'SFMono-Regular, Consolas, "Liberation Mono", monospace');
+  }
+  await page.reload();
+  await expect(page.getByRole("combobox", { name: "Font", exact: true })).toHaveValue("inter");
+  await expect(reader).toHaveText("");
 });
