@@ -51,3 +51,22 @@ test("mobile controls and long unbroken code stay within the viewport", async ({
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await expect(page.getByRole("button", { name: "Dark", exact: true })).toBeVisible();
 });
+
+for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }, { width: 844, height: 390 }]) {
+  test(`reader fills viewport height with tools on the right at ${viewport.width}×${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    const reader = page.getByRole("textbox");
+    const tools = page.getByRole("complementary", { name: "Reading preferences" });
+    const readerBox = (await reader.boundingBox())!;
+    const toolsBox = (await tools.boundingBox())!;
+    expect(readerBox.y).toBe(0);
+    expect(readerBox.height).toBe(viewport.height);
+    expect(readerBox.x + readerBox.width).toBeLessThanOrEqual(toolsBox.x);
+    expect(toolsBox.x + toolsBox.width).toBe(viewport.width);
+    await reader.fill("A long AI response with code\n    print('hello')\n".repeat(300));
+    expect(await reader.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(viewport.height);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
+  });
+}

@@ -3,6 +3,7 @@
 A focused text reader built with Next.js App Router, TypeScript, Tailwind CSS, and shadcn/ui components powered by Radix UI.
 
 - Paste or type AI responses, prose, JavaScript, Python, or other text.
+- A full-height text area uses the entire viewport, with reading controls in a right sidebar. The sidebar becomes a compact rail on mobile.
 - Adjust font size from 12–36 px and reading width from 50–100%.
 - Switch between light and dark appearances.
 - Indentation and line breaks are preserved in a monospaced editor. Long lines wrap.
@@ -27,7 +28,7 @@ npx playwright install chromium
 npm test
 ```
 
-To use an existing Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium` when running tests. The tests start their own development server on port 3100 and verify text preservation, font controls, width adjustment, theme persistence, and mobile overflow.
+To use an existing Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium` when running tests. The tests start their own development server on port 3100 and verify text preservation, font controls, width adjustment, theme persistence, mobile overflow, and full-height layouts with a right sidebar on desktop, mobile, and landscape screens.
 
 ## Deploy to Vercel
 
