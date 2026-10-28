@@ -224,12 +224,12 @@ test("theme accents and prose highlighting distinguish quotes, italics, labels, 
   for (const theme of ["Light", "Dark"]) {
     await page.getByRole("button", { name: theme, exact: true }).click();
     const accent = theme === "Light" ? [255, 74, 140, 255] : [74, 255, 180, 255];
-    const label = theme === "Light" ? [81, 70, 168, 255] : [255, 212, 138, 255];
+    const contrast = theme === "Light" ? [81, 70, 168, 255] : [255, 212, 138, 255];
     await expect(page.locator(".brand-icon")).toHaveCSS("background-color", `rgb(${accent.slice(0, 3).join(", ")})`);
-    expect(await textColor(reader.locator("em"))).toEqual(accent);
-    expect(await textColor(reader.locator(".reader-quotation").first())).toEqual(accent);
-    expect(await textColor(reader.locator("blockquote p"))).toEqual(accent);
-    for (const highlighted of await reader.locator(".reader-label").all()) expect(await textColor(highlighted)).toEqual(label);
+    expect(await textColor(reader.locator("em"))).toEqual(contrast);
+    expect(await textColor(reader.locator(".reader-quotation").first())).toEqual(contrast);
+    expect(await textColor(reader.locator("blockquote p"))).toEqual(contrast);
+    for (const highlighted of await reader.locator(".reader-label").all()) expect(await textColor(highlighted)).toEqual(accent);
     for (const title of ["Paragraph title", "Indented title", "Standalone title"]) {
       await expect(reader.locator(".reader-label").filter({ hasText: title })).toHaveCount(1);
     }

@@ -13,7 +13,7 @@
   --accent-foreground: #35382f;
   --input: #e4e3da;
   --ring: #ff4a8c;
-  --reader-label-color: #5146a8;
+  --reader-contrast: #5146a8;
   --subtle: #a1a293;
   --line: #e4e4da;
   --glass-background: #fffefab3;
@@ -32,7 +32,7 @@
   --accent-foreground: #edf2fa;
   --input: #3b485f;
   --ring: #4affb4;
-  --reader-label-color: #ffd48a;
+  --reader-contrast: #ffd48a;
   --subtle: #8798af;
   --line: #354158;
   --glass-background: #1a213066;
@@ -88,11 +88,11 @@ button:disabled { cursor: default; }
 .reader-editor > :first-child { margin-top: 0; }
 .reader-editor strong { font-weight: 700; }
 .reader-editor em { font-style: italic; }
-.reader-editor em, .reader-editor .reader-quotation, .reader-editor blockquote { color: color-mix(in srgb, var(--primary) var(--reader-opacity, 100%), transparent); }
-.reader-editor .reader-label, .reader-editor .reader-label *, .reader-editor strong:has(.reader-label) { color: color-mix(in srgb, var(--reader-label-color) var(--reader-opacity, 100%), transparent); }
+.reader-editor em, .reader-editor .reader-quotation, .reader-editor blockquote { color: color-mix(in srgb, var(--reader-contrast) var(--reader-opacity, 100%), transparent); }
+.reader-editor .reader-label, .reader-editor .reader-label *, .reader-editor strong:has(.reader-label) { color: color-mix(in srgb, var(--primary) var(--reader-opacity, 100%), transparent); }
 .reader-editor code, .reader-editor pre { color: color-mix(in srgb, var(--foreground) var(--reader-opacity, 100%), transparent); }
 .reader-editor a { color: color-mix(in srgb, var(--primary) var(--reader-opacity, 100%), transparent); text-decoration: underline; }
-.reader-editor blockquote { border-left: 3px solid var(--primary); padding-left: 1em; margin: 0.75em 0; }
+.reader-editor blockquote { border-left: 3px solid var(--reader-contrast); padding-left: 1em; margin: 0.75em 0; }
 .reader-editor pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 1em; margin: 0.75em 0; background: var(--accent); border-radius: 6px; font: inherit; font-family: var(--font-mono); }
 .reader-editor code { font-family: var(--font-mono); background: var(--accent); border-radius: 3px; }
 .reader-editor hr { margin: 1em 0; border-color: var(--line); }
